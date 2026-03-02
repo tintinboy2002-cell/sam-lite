@@ -1,0 +1,42 @@
+/* HolidayCalendar.css */
+
+/* Make the calendar larger */
+.large-calendar {
+  font-size: 1.5em; /* Increase the font size */
+  width: 100%; /* Full width */
+}
+
+/* Style the calendar container */
+.react-calendar {
+  border: none; /* Remove default border */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+  border-radius: 8px; /* Rounded corners */
+  background-color: #fff7ff; /* Extremely light background color */
+  padding: 20px; /* Add padding for better spacing */
+}
+
+/* Add styles to individual tiles */
+.react-calendar__tile {
+  padding: 10px; /* Increase padding */
+  border-radius: 4px; /* Rounded corners */
+  transition: background-color 0.3s ease; /* Smooth transition */
+  color: black !important; /* Set date font color to black for all days */
+}
+
+/* Highlight today's date */
+.react-calendar__tile--now {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+/* Highlight selected date */
+.react-calendar__tile--active {
+  background-color: #2196f3 !important;
+  color: white !important;
+}
+
+/* Holiday styling */
+.holiday {
+  background-color: red !important;
+  color: white !important;
+}

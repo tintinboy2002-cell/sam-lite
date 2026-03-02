@@ -1,0 +1,40 @@
+.card-box {
+  width: 200px;
+  height: 200px;
+  transition: transform 0.2s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-footer {
+  margin-top: 10px;
+  font-weight: bold;
+  color: '#4A4A4A';
+  text-transform: 'uppercase';
+  letter-spacing: '1px';
+}
+
+.img-fluid {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  transition: transform 0.3s ease-in-out;
+}
+
+.hover-card:hover {
+  transform: scale(1.05);
+}
+
+.hover-image:hover {
+  transform: scale(1.1);
+}
+
+.leave-card {
+  transition: transform 0.2s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-weight: bold;
+    text-transform: 'uppercase';
+    letter-spacing: '1px';
+  }

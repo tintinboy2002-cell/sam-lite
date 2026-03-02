@@ -1,0 +1,18 @@
+/* Apply on the body or specific page wrapper */
+body {
+    overflow: hidden;  /* Hide the scrollbar */
+  }
+  
+  body::-webkit-scrollbar {
+    display: none; /* Hide scrollbar in Webkit-based browsers */
+  }
+  
+  body {
+    -ms-overflow-style: none; /* Hide scrollbar in IE */
+    scrollbar-width: none;    /* Hide scrollbar in Firefox */
+  }
+  
+  body {
+    overflow: scroll;  /* Enable scrolling */
+  }
+  

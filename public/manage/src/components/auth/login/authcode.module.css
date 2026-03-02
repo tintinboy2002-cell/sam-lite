@@ -1,0 +1,14 @@
+.authCodeInput {
+  width: 36px; /* Ensure width and height are equal */
+  height: 36px; /* Ensure width and height are equal */
+  padding: 0; /* Remove padding for a cleaner look */
+  border-radius: 4px; /* Slightly smaller radius for a sharper look */
+  font-size: 20px; /* Increase font size for better visibility */
+  text-align: center;
+  margin-right: 10px; /* Adjust margin to balance spacing */
+  border: 1px solid #ced4da;
+  background-color: #fff; /* Add a background color for contrast */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a subtle shadow for depth */
+  outline: none; /* Remove default outline on focus */
+  transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition for focus effects */
+}
