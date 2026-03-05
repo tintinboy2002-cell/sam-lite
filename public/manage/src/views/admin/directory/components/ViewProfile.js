@@ -7,6 +7,14 @@ import {
   useColorModeValue,
   Button,
   SimpleGrid,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  Select,
 } from '@chakra-ui/react';
 import {
   Nav,
@@ -45,7 +53,6 @@ import {
   MdSchool,
   MdAccountTree,
 } from 'react-icons/md';
-import ReportingContainer from 'views/admin/reporting/ReportingContainer';
 
 const ViewProfile = () => {
   const { id } = useParams();
@@ -68,6 +75,13 @@ const ViewProfile = () => {
   const [inputErrors, setInputErrors] = useState({});
   const [isIdChanged, setIsIdChanged] = useState(false);
   const [originalData, setOriginalData] = useState({});
+  const [reportingManagers, setReportingManagers] = useState([]);
+  const [reportingLoading, setReportingLoading] = useState(false);
+  const [managersMaster, setManagersMaster] = useState([]);
+  const [isManagerModalOpen, setIsManagerModalOpen] = useState(false);
+  const [manager1, setManager1] = useState('');
+  const [manager2, setManager2] = useState('');
+  const [managerSubmitting, setManagerSubmitting] = useState(false);
 
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -197,6 +211,7 @@ const ViewProfile = () => {
   };
 
   const loginid = decryptData(Cookies.get('role_id'));
+  const isAdmin = Number(loginid) === 1 || Number(loginid) === 2;
 
   useEffect(() => {
     if (loginid === 2) {
@@ -205,6 +220,211 @@ const ViewProfile = () => {
 
     getData();
   }, [loginid, id]);
+
+  // Fetch reporting managers list and pick managers for this specific employee (id)
+  useEffect(() => {
+    const fetchReportingManagersForUser = async () => {
+      try {
+        setReportingLoading(true);
+        const res = await httpInjectorService.getUsersReportingList();
+
+        if (res?.status === 'success' && Array.isArray(res.data)) {
+          const matchedUser = res.data.find(
+            (user) => String(user.user_id) === String(id),
+          );
+
+          if (matchedUser) {
+            const managersForUser = [
+              matchedUser.reporting_manager1_name && {
+                id: matchedUser.reporting_manager1_record_id,
+                name: matchedUser.reporting_manager1_name,
+                department: matchedUser.department_name,
+                designation: matchedUser.designation_name,
+                slot: 1,
+              },
+              matchedUser.reporting_manager2_name && {
+                id: matchedUser.reporting_manager2_record_id,
+                name: matchedUser.reporting_manager2_name,
+                department: matchedUser.department_name,
+                designation: matchedUser.designation_name,
+                slot: 2,
+              },
+            ].filter(Boolean);
+
+            setReportingManagers(managersForUser);
+          } else {
+            setReportingManagers([]);
+          }
+        } else {
+          setReportingManagers([]);
+        }
+      } catch (error) {
+        console.error('Error fetching reporting managers:', error);
+        setReportingManagers([]);
+      } finally {
+        setReportingLoading(false);
+      }
+    };
+
+    fetchReportingManagersForUser();
+  }, [id]);
+
+  // Fetch manager list for admin assign/update
+  useEffect(() => {
+    const fetchManagersList = async () => {
+      if (!isAdmin) return;
+      try {
+        const res = await httpInjectorService.getManagersList();
+        if (res?.status === 'success') {
+          setManagersMaster(res.data || []);
+        }
+      } catch (error) {
+        // optional toast – skipping to keep this view simple
+        console.error('Failed to fetch managers list', error);
+      }
+    };
+
+    fetchManagersList();
+  }, [isAdmin]);
+
+  const openManagerModal = () => {
+    // Pre-fill from current reporting managers
+    setManager1(reportingManagers?.[0]?.id || '');
+    setManager2(reportingManagers?.[1]?.id || '');
+    setIsManagerModalOpen(true);
+  };
+
+  const closeManagerModal = () => {
+    setIsManagerModalOpen(false);
+    setManager1('');
+    setManager2('');
+  };
+
+  const handleManagerSubmit = async () => {
+    if (!id) return;
+
+    if (!manager1 && !manager2) {
+      toast.error('Select at least one manager');
+      return;
+    }
+
+    if (manager1 && manager2 && manager1 === manager2) {
+      toast.error('Managers must be different');
+      return;
+    }
+
+    const payload = {
+      user_id: id,
+      manager_id1: manager1 ? Number(manager1) : undefined,
+      manager_id2: manager2 ? Number(manager2) : undefined,
+    };
+
+    try {
+      setManagerSubmitting(true);
+      const hasExistingManagers = reportingManagers.length > 0;
+
+      const res = hasExistingManagers
+        ? await httpInjectorService.updateReportingManager(payload)
+        : await httpInjectorService.assignReportingManager(payload);
+
+      if (res?.status === 'success') {
+        toast.success(res.message || 'Managers updated');
+        closeManagerModal();
+        // Refresh local managers
+        const refreshRes = await httpInjectorService.getUsersReportingList();
+        if (refreshRes?.status === 'success' && Array.isArray(refreshRes.data)) {
+          const matchedUser = refreshRes.data.find(
+            (user) => String(user.user_id) === String(id),
+          );
+
+          if (matchedUser) {
+            const managersForUser = [
+              matchedUser.reporting_manager1_name && {
+                id: matchedUser.reporting_manager1_record_id,
+                name: matchedUser.reporting_manager1_name,
+                department: matchedUser.department_name,
+                designation: matchedUser.designation_name,
+                slot: 1,
+              },
+              matchedUser.reporting_manager2_name && {
+                id: matchedUser.reporting_manager2_record_id,
+                name: matchedUser.reporting_manager2_name,
+                department: matchedUser.department_name,
+                designation: matchedUser.designation_name,
+                slot: 2,
+              },
+            ].filter(Boolean);
+
+            setReportingManagers(managersForUser);
+          } else {
+            setReportingManagers([]);
+          }
+        }
+      } else {
+        toast.error(res?.message || 'Operation failed');
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || 'Something went wrong while updating managers',
+      );
+    } finally {
+      setManagerSubmitting(false);
+    }
+  };
+
+  const handleRemoveManager = async (slot) => {
+    if (!id) return;
+
+    const payload = {
+      user_id: id,
+      remove_manager1: slot === 1,
+      remove_manager2: slot === 2,
+    };
+
+    try {
+      const res = await httpInjectorService.removeUserReportingManager(payload);
+      if (res?.status === 'success') {
+        toast.success(res?.message || 'Manager removed');
+        // Refresh current managers
+        const refreshRes = await httpInjectorService.getUsersReportingList();
+        if (refreshRes?.status === 'success' && Array.isArray(refreshRes.data)) {
+          const matchedUser = refreshRes.data.find(
+            (user) => String(user.user_id) === String(id),
+          );
+
+          if (matchedUser) {
+            const managersForUser = [
+              matchedUser.reporting_manager1_name && {
+                id: matchedUser.reporting_manager1_record_id,
+                name: matchedUser.reporting_manager1_name,
+                department: matchedUser.department_name,
+                designation: matchedUser.designation_name,
+                slot: 1,
+              },
+              matchedUser.reporting_manager2_name && {
+                id: matchedUser.reporting_manager2_record_id,
+                name: matchedUser.reporting_manager2_name,
+                department: matchedUser.department_name,
+                designation: matchedUser.designation_name,
+                slot: 2,
+              },
+            ].filter(Boolean);
+
+            setReportingManagers(managersForUser);
+          } else {
+            setReportingManagers([]);
+          }
+        }
+      } else {
+        toast.error(res?.message || 'Failed to remove manager');
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || 'Failed to remove manager',
+      );
+    }
+  };
+
 
   //  upload image function
   const saveImage = async () => {
@@ -432,7 +652,7 @@ const ViewProfile = () => {
   const tabInactiveColor = useColorModeValue('gray.600', 'gray.400');
 
   return (
-    <React.Fragment>
+    <>
       {loading ? (
         <Flex
           direction="column"
@@ -794,7 +1014,72 @@ const ViewProfile = () => {
                   </TabPane>
 
                   <TabPane tabId="3">
-                    <ReportingContainer activeTab={activeTab} />
+                    <Box>
+                      <Text fontWeight="bold" fontSize="lg" mb={4}>
+                        Reporting Manager
+                      </Text>
+
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          colorScheme="teal"
+                          mb={4}
+                          onClick={openManagerModal}
+                        >
+                          Manage Reporting Managers
+                        </Button>
+                      )}
+
+                      {reportingLoading && (
+                        <Flex>
+                          <Spinner size="xl" color="purple.500" />
+                        </Flex>
+                      )}
+
+                      {!reportingLoading && reportingManagers.length === 0 && (
+                        <Box>No reporting manager assigned.</Box>
+                      )}
+
+                      {!reportingLoading &&
+                        reportingManagers.map((manager) => (
+                          <Box
+                            key={`${manager.slot}-${manager.id}`}
+                            p={4}
+                            borderWidth="1px"
+                            borderRadius="md"
+                            mb={3}
+                          >
+                            <Text fontWeight="semibold">
+                              Manager Name:{' '}
+                              <span style={{ fontWeight: 'normal' }}>
+                                {manager.name}
+                              </span>
+                            </Text>
+                            <Text fontWeight="semibold">
+                              Department:{' '}
+                              <span style={{ fontWeight: 'normal' }}>
+                                {manager.department}
+                              </span>
+                            </Text>
+                            <Text fontWeight="semibold">
+                              Designation:{' '}
+                              <span style={{ fontWeight: 'normal' }}>
+                                {manager.designation}
+                              </span>
+                            </Text>
+                            {isAdmin && (
+                              <Button
+                                size="xs"
+                                colorScheme="red"
+                                mt={2}
+                                onClick={() => handleRemoveManager(manager.slot)}
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </Box>
+                        ))}
+                    </Box>
                   </TabPane>
 
                   <TabPane tabId="4">
@@ -822,7 +1107,63 @@ const ViewProfile = () => {
           </Box>
         </Box>
       )}
-    </React.Fragment>
+
+      {isAdmin && (
+        <Modal isOpen={isManagerModalOpen} onClose={closeManagerModal}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Manage Reporting Managers</ModalHeader>
+            <ModalCloseButton />
+
+            <ModalBody>
+              <Select
+                placeholder="Select Manager 1"
+                value={manager1}
+                onChange={(e) => setManager1(e.target.value)}
+                mb={3}
+              >
+                {managersMaster.map((manager) => (
+                  <option
+                    key={manager.reporting_manager_record_id}
+                    value={manager.reporting_manager_record_id}
+                  >
+                    {manager.manager_name}
+                  </option>
+                ))}
+              </Select>
+
+              <Select
+                placeholder="Select Manager 2 (Optional)"
+                value={manager2}
+                onChange={(e) => setManager2(e.target.value)}
+              >
+                {managersMaster.map((manager) => (
+                  <option
+                    key={manager.reporting_manager_record_id}
+                    value={manager.reporting_manager_record_id}
+                  >
+                    {manager.manager_name}
+                  </option>
+                ))}
+              </Select>
+            </ModalBody>
+
+            <ModalFooter>
+              <Button mr={3} onClick={closeManagerModal}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme="teal"
+                onClick={handleManagerSubmit}
+                isLoading={managerSubmitting}
+              >
+                Save
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
+    </>
   );
 };
 

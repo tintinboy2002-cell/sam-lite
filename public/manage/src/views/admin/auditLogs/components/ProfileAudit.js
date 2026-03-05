@@ -38,12 +38,14 @@ import httpInjectorService from 'services/http-injector.service';
 import { BulletList } from 'react-content-loader';
 import { Empty } from 'antd';
 import { SimpleGrid } from '@chakra-ui/react';
+import PayrollAudit from './PayrollAudit';
 
 const ProfileAudit = () => {
   const [profileauditlogs, setProfileAuditLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedLog, setSelectedLog] = useState(null);
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const columns = useMemo(
     () => [
@@ -143,19 +145,23 @@ const ProfileAudit = () => {
     <div style={{ marginTop: '80px' }}>
       <Card>
         <CardBody>
-          <Tabs colorScheme="purple">
+          <Tabs
+            colorScheme="purple"
+            index={activeTabIndex}
+            onChange={(index) => setActiveTabIndex(index)}
+          >
             <TabList gap={4}>
               <Tab>
                 <MdPerson style={{ marginRight: '5px' }} />
                 My Profile
               </Tab>
               <Tab>
-                <MdBusiness style={{ marginRight: '5px' }} />
-                Company Profile
-              </Tab>
-              <Tab>
                 <MdAssuredWorkload style={{ marginRight: '5px' }} />
                 Payroll
+              </Tab>
+              <Tab>
+                <MdBusiness style={{ marginRight: '5px' }} />
+                Company Profile
               </Tab>
             </TabList>
 
@@ -184,7 +190,7 @@ const ProfileAudit = () => {
                 )}
               </TabPanel>
               <TabPanel>
-                <Empty className="mt-4" />
+                <PayrollAudit isActive={activeTabIndex === 1} />
               </TabPanel>
               <TabPanel>
                 <Empty className="mt-4" />

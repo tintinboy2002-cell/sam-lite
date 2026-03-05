@@ -144,7 +144,7 @@ const DashboardTab = () => {
     activities: <ActivitiesTab username={user?.username} workLog={workLog} />,
     work: <Work />,
     team: <Teams />,
-    report: <ReportingContainer/>,
+    report: <MyProfileReportingPanel/>,
     education: <Education />,
     family: <Family />,
     documents: <EmployeeDoc />,

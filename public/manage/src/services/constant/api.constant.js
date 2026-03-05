@@ -304,7 +304,7 @@ export const DATA_API_CONSTANT = {
   GET_WFH_REQUEST: 'api/remote-work/get_wfh_request',
   UPDATE_WFH_REQUEST: 'api/remote-work/edit_wfh_request',
   DELETE_WFH_REQUEST: 'api/remote-work/remove_wfh_request',
-  ADMIN_STATUS_UPDATE: 'api/remote-work/update-wfh-status', // update api for admin side (Approved/ rejected)
+  ADMIN_STATUS_UPDATE: 'api/remote-work/update_wfh_status', // update api for admin side (Approved/ rejected)
 
 // Reporting manager api's
 GET_USERS_REPORTING_LIST: 'api/auth/get-users-reporting-list',
@@ -313,5 +313,6 @@ ADD_MANAGER: 'api/auth/add-manager',
 ASSIGN_MANAGER: 'api/auth/assign-reporting-manager',
 UPDATE_REPORTING_MANAGER: 'api/auth/updateUserReportingManager',
 DELETE_REPORTING_MANAGER: 'api/auth/deleteReportingManager/:manager_id',
-REMOVE_USER_REPORTING_MANAGER: 'api/auth/removeUserReportingManager'
+REMOVE_USER_REPORTING_MANAGER: 'api/auth/removeUserReportingManager',
+GET_USER_ASSIGNED_MANAGERS: 'api/auth/get-User-Assigned-Managers'
 };

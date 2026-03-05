@@ -1521,6 +1521,7 @@ this.checkIfManagerAlreadyAssigned = async function (
     managerId
   ]);
 };
+
 this.getAssignedManagerCount = async function (userId) {
   const query = `
     SELECT COUNT(*) as count
@@ -1570,6 +1571,7 @@ this.getUsersReportingList = async function (org_id) {
     SELECT
       u.id AS user_id,
       u.username,
+      u.department_Id AS department_id,
       d.department_name AS department_name,
       des.designations AS designation_name,
 
@@ -1577,7 +1579,8 @@ this.getUsersReportingList = async function (org_id) {
       rm1.id AS reporting_manager1_record_id,
 
       rm2.manager_name AS reporting_manager2_name,
-      rm2.id AS reporting_manager2_record_id
+      rm2.id AS reporting_manager2_record_id,
+      r.role
 
     FROM sam_users u
 
@@ -1596,6 +1599,9 @@ this.getUsersReportingList = async function (org_id) {
     LEFT JOIN sam_reporting_manager rm2
       ON rm2.id = u.reporting_manager_id2
       AND rm2.is_active = 1
+
+    LEFT JOIN sam_role_rights r
+      ON r.id = u.role_id
 
     WHERE u.org_id = ?
       AND u.is_active = 1

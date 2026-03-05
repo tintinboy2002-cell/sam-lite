@@ -1245,6 +1245,13 @@ const removeUserReportingManager = (payload) => {
   );
 };
 
+const getUserAssignedManagers = (payload) => {
+  return httpGetService.getDataFromAPI(
+    DATA_API_CONSTANT.GET_USER_ASSIGNED_MANAGERS,
+    payload
+  );
+};
+
 // Assign the object to a variable first
 const authService = {
   login,
@@ -1492,7 +1499,8 @@ const authService = {
   assignReportingManager,
   updateReportingManager,
   removeUserReportingManager,
-  deleteReportingManager
+  deleteReportingManager,
+  getUserAssignedManagers
 };
 
 export default authService;

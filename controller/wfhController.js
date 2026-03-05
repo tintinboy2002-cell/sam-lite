@@ -72,4 +72,19 @@ router.delete(
   }),
 );
 
+//update api for approve/reject for admin
+router.put(
+  "/update_wfh_status",
+  errorWrap(async function (req, res) {
+    let response = await wfhBl.updateWfhRequestStatus(req);
+    if (response) {
+      res.status(200).send({ status: "success", data: response });
+    } else {
+      res
+        .status(404)
+        .send({ status: "error", message: "no wfh request found" });
+    }
+  }),
+);
+
 module.exports = router;

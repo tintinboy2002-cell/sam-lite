@@ -1,20 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import httpInjectorService from 'services/http-injector.service';
-import CompanyReportingManager from './CompanyReportingManager';
-import MyProfileReportingPanel from './MyProfileReportingPanel';
-import { decryptData } from 'utils/crypto';
-import Cookies from 'js-cookie';
+import React, { useEffect, useState } from "react";
+import httpInjectorService from "services/http-injector.service";
+import CompanyReportingManager from "./CompanyReportingManager";
+import MyProfileReportingPanel from "./MyProfileReportingPanel";
+import { decryptData } from "utils/crypto";
+import Cookies from "js-cookie";
 
-// Parent component that shares state
 const ReportingContainer = () => {
+  const roleId = Number(decryptData(Cookies.get("role_id")));
+  const userId = Number(decryptData(Cookies.get("user_id")));
 
-    const roleId = decryptData(Cookies.get('role_id'));
-    const isAdmin = Number(roleId) === 1 || Number(roleId) === 2;
-    const isBetaUser = Number(roleId) === 3 || roleId == 3 || (roleId && String(roleId).trim() === "3");
-    const user_id = Number(decryptData(Cookies.get('user_id')));
-
-    console.log('Is Admin', isAdmin);
-    console.log('Current user Id', user_id);
+  const isAdmin = roleId === 1 || roleId === 2;
+  const isBetaUser = roleId === 3;
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -22,9 +18,9 @@ const ReportingContainer = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-  
+
       const res = await httpInjectorService.getUsersReportingList();
-  
+
       const formattedUsers = res.data.map((user) => ({
         id: user.user_id,
         name: user.username,
@@ -44,7 +40,7 @@ const ReportingContainer = () => {
           },
         ].filter(Boolean),
       }));
-  
+
       setUsers(formattedUsers);
     } catch (error) {
       console.error(error);
@@ -54,26 +50,30 @@ const ReportingContainer = () => {
   };
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (isAdmin) {
+      fetchUsers(); // Only admins fetch full company list
+    }
+  }, [isAdmin]);
+
+  // Get only current user object
+  const currentUser = users.find((u) => u.id === userId);
 
   return (
     <>
-      <CompanyReportingManager
-        users={users}
-        setUsers={setUsers}
-        loading={loading}
-        refreshUsers={fetchUsers}
-        isAdmin={isAdmin}
-        isBetaUser={isBetaUser}
-      />
+      {isAdmin && (
+        <CompanyReportingManager
+          users={users}
+          setUsers={setUsers}
+          loading={loading}
+          refreshUsers={fetchUsers}
+          isAdmin={isAdmin}
+          isBetaUser={isBetaUser}
+        />
+      )}
 
-      {/* <MyProfileReportingPanel
-        users={users}
-        setUsers={setUsers}
-        currentUserId={user_id}
-        isAdmin={isAdmin}
-      /> */}
+      {isBetaUser && (
+        <MyProfileReportingPanel currentUser={currentUser} />
+      )}
     </>
   );
 };

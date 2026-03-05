@@ -2574,12 +2574,14 @@ function obj() {
   //AddReportingManager
 
   this.addManager = async (req) => {
-  const { user_id, department_id, org_id, manager_name } = req.body;
+  const { user_id, department_id, manager_name } = req.body;
+
+  console.log("REQ BODY:", req.body);
   const user_details = await authDl.getDecryptToken(req);
-  const { role_id } = user_details;
+  const { role_id , org_id } = user_details;
 
   // Validate input
-  if (!user_id || !department_id || !org_id || !manager_name) {
+  if (!user_id || !department_id || !manager_name) {
     return { status: "error", message: "All fields are required." };
   }
 

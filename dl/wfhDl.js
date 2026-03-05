@@ -57,5 +57,13 @@ function obj() {
     const res = await mysqlDao.doQueryParams(query, [ids]);
     return _.isEmpty(res) ? {} : res;
   };
+
+  //update api approve/reject for admin
+  this.updateWfhRequestStatus = async function (obj) {
+    const query = `update sam_wfhrequest set status = ? where id = ?`;
+    const values = [obj.status, obj.id];
+    const res = await mysqlDao.doQueryParams(query, values);
+    return _.isEmpty(res) ? {} : res;
+  };
 }
 module.exports = new obj();

@@ -183,6 +183,34 @@ function obj() {
 
     return response;
   };
+
+    //update status api to approve/reject for admin
+  this.updateWfhRequestStatus = async function(req) {
+    let response = {};
+    
+    let validationRuleObj = {
+      id : "required",
+      status: 'required',
+    };
+    let data = req.body
+    let isValid = await validations.validate(data, validationRuleObj);
+    if(!isValid){
+      response.status = 'error';
+      response.errors = global.errorMessage;
+      let key = Object.keys(global.errorMessage)[0];
+      response.message = global.errorMessage[key]?.message || 'validation failed';
+      return response;
+    }
+    const result  = await wfhDl.updateWfhRequestStatus(data);
+    if(result && result.affectedRows > 0){
+      response.status = 'success';
+      response.message = 'status updated successfully';
+    } else {
+      response.status = 'error';
+      response.message = 'no data found';
+    }
+    return response;
+  };
 }
 
 module.exports = new obj();

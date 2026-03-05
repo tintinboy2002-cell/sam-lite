@@ -18,6 +18,8 @@ import {
   Text,
   ModalFooter,
   ModalCloseButton,
+  Badge,
+  Checkbox
 } from '@chakra-ui/react';
 import { ViewIcon, CheckIcon, SmallCloseIcon } from '@chakra-ui/icons';
 import { FiFilePlus, FiTrash2, FiEdit } from 'react-icons/fi';
@@ -158,7 +160,18 @@ const WFHRequest = () => {
         Cell: ({ value }) => (value ? value.split('T')[0] : ''),
       },
       { Header: 'Days', accessor: 'days' },
-      { Header: 'Status', accessor: 'status' },
+      { Header: 'Status', accessor: 'status', Cell:({value}) => {
+        const color = 
+        value === 'Pending' ? 'yellow' : 
+        value === 'Approved' ? 'green' : 
+        value === 'Rejected' ? 'red' : 'gray';
+        
+        return (
+          <Badge colorScheme={color}
+          variant='solid' px={3} py={1} borderRadius="full" fontWeight="medium">{value}</Badge>
+        );
+      },
+    },
       {
         Header: 'Applied On',
         accessor: 'applied_on',
@@ -200,27 +213,52 @@ const WFHRequest = () => {
     if (role_id === 2) {
       baseColumn.push({
         Header: 'Action',
-        Cell: ({ row }) => (
-          <Flex gap={3}>
-            <Button size="xs" colorScheme="purple" rounded="3">
-              <CheckIcon />
-            </Button>
-            <Button size="xs" colorScheme="red" rounded="3">
-              <SmallCloseIcon />
-            </Button>
-            <Button
-              size="xs"
-              colorScheme="blue"
-              rounded="3"
-              onClick={() => {
-                setViewRequest(row.original);
-                onviewOpen();
-              }}
-            >
-              <ViewIcon />
-            </Button>
-          </Flex>
-        ),
+      Cell: ({ row }) => {
+  const status = row.original.status;
+
+  return (
+    <Flex gap={2} align="center">
+      
+      {status === "Pending" && (
+        <>
+          <Button
+            size="xs"
+            colorScheme="green"
+            variant="solid"
+            borderRadius="md"
+            onClick={() => updateStatus(row.original.id, "Approved")}
+          >
+            <CheckIcon boxSize={3} />
+          </Button>
+
+          <Button
+            size="xs"
+            colorScheme="red"
+            variant="solid"
+            borderRadius="md"
+            onClick={() => updateStatus(row.original.id, "Rejected")}
+          >
+            <SmallCloseIcon boxSize={3} />
+          </Button>
+        </>
+      )}
+
+      <Button
+        size="xs"
+        colorScheme="blue"
+        variant="solid"
+        borderRadius="md"
+        onClick={() => {
+          setViewRequest(row.original);
+          onviewOpen();
+        }}
+      >
+        <ViewIcon boxSize={3} />
+      </Button>
+
+    </Flex>
+  );
+},
       });
     }
     return baseColumn;
@@ -258,6 +296,24 @@ const WFHRequest = () => {
     }
   };
 
+
+  const updateStatus = async (id, status) => {
+  try {
+    const payload = { id, status };
+
+    const response = await httpInjectorService.updateWfhStatus(payload);
+
+    if (response?.status === "success") {
+      toast.success(response.message || "Status Updated Successfully");
+      fetchWfhRequest();
+    } else {
+      toast.error(response.message || "Status update failed");
+    }
+  } catch (error) {
+    toast.error("Something went wrong");
+  }
+};
+  
   return (
     <Box p={10}>
       <Flex justify={'space-between'} align="center">

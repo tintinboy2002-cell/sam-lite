@@ -3,15 +3,6 @@ import { Table as CTable, Thead, Tbody, Tr, Th, Td, IconButton, Tooltip, Box } f
 import { EditIcon, DeleteIcon } from '@chakra-ui/icons'
 
 // Reusable table component
-// Props:
-// - data: array of row objects (alias: contacts for backward compatibility)
-// - columns: [{ header: string, accessor?: string | ((row) => any), cell?: (value, row) => ReactNode }]
-// - getRowKey?: (row, index) => string
-// - renderActions?: (row) => ReactNode
-// - onEdit?: (row) => void (alias: handleEdit)
-// - onDelete?: (row) => void (alias: handleDeleteModal)
-// - emptyMessage?: string
-// - size, variant: Chakra UI Table props
 const Table = ({
   data,
   contacts = [],
@@ -93,7 +84,7 @@ const Table = ({
           <Thead>
             <Tr>
               {resolvedColumns.map((col, idx) => (
-                <Th key={idx} textAlign="center" border="1px solid" borderColor="gray.300">
+                <Th key={idx} fontWeight="bold" textColor="black" textAlign="center" border="1px solid" borderColor="gray.300">
                   {col.header}
                 </Th>
               ))}
@@ -107,10 +98,10 @@ const Table = ({
               rows.map((row, idx) => (
                 <Tr key={getKey(row, idx)} border="1px solid" borderColor="gray.300">
                   {resolvedColumns.map((col, cidx) => (
-                    <Td key={cidx} textAlign="center">{renderCell(col, row)}</Td>
+                    <Td key={cidx} textAlign="center" border="1px solid" borderColor="gray.300">{renderCell(col, row)}</Td>
                   ))}
                   {(renderActions || editHandler || deleteHandler) && (
-                    <Td textAlign="center" display="flex" justifyContent="center">
+                    <Td textAlign="center" display="flex" justifyContent="center" border="1px solid" borderColor="gray.300">
                       {typeof renderActions === 'function' ? (
                         renderActions(row)
                       ) : (
